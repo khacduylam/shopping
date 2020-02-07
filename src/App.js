@@ -6,7 +6,7 @@ import HomePage from "./pages/homepage/homepage.component";
 import ShopPage from "./pages/shop/shop.component";
 import SignInAndSignUpPage from "./pages/sign-in-and-sign-up/sign-in-and-sign-up.component";
 
-import { auth } from './firebase/firebase.utils';
+import { auth, saveUserProfile } from './firebase/firebase.utils';
 
 import './App.css';
 
@@ -22,9 +22,23 @@ class App extends Component {
   unsubscribeFromAuth = null;
 
   componentDidMount() {
-    this.unsubscribeFromAuth = auth.onAuthStateChanged(user => {
-      this.setState({ currentUser: user });
-      console.log(user);
+    this.unsubscribeFromAuth = auth.onAuthStateChanged(async userAuth => {
+      if(userAuth) {
+        const userRef = await saveUserProfile(userAuth);
+        const userSnap = await userRef.get();
+        const userData = userSnap.data();
+
+        // format date fields
+        const { createdAt, updatedAt } = userData;
+        userData.createdAt = new Date(createdAt.seconds * 1000);
+        userData.updatedAt = new Date(updatedAt.seconds * 1000);
+
+        userData.id = userSnap.id;
+
+        this.setState({ currentUser: userData });
+      } else {
+        this.setState({ currentUser: null });
+      }
     });
   }
 

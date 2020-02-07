@@ -22,4 +22,25 @@ const provider = new firebase.auth.GoogleAuthProvider();
 provider.setCustomParameters({ prompt: 'select_account' });
 export const signInWithGoogle = () => auth.signInWithPopup(provider);
 
+export const saveUserProfile = async (userInfo, otherInfo) => {
+  try {
+    if(userInfo && userInfo.uid) {
+      // Check if user doc exists
+      const userRef = firestore.collection('users').doc(userInfo.uid);
+      const userSnap = await userRef.get();
+      if(!userSnap.exists) {
+        const { displayName, email } = userInfo;
+        const createdAt = new Date();
+        const updatedAt = new Date();
+        await userRef.set({ displayName, email, createdAt, updatedAt, ...otherInfo });
+      }
+
+      return userRef;
+    }
+  } catch(err) {
+    console.log(`save user profile error: ${err}`);
+    return null;
+  }
+};
+
 export default firebase;

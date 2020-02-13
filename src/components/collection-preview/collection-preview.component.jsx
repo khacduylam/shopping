@@ -6,7 +6,7 @@ import './collection-preview.styles.scss';
 
 const CollectionPreview = ({ title, items }) => {
   const previewItems = items.filter((item, index) => index < 4).map(
-    ({ id, ...rest }) => (<CollectionItem key={id} {...rest} />)
+    item => (<CollectionItem key={item.id} item={item} />)
   );
   return (
     <div className='collection-preview'>
